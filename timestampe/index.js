@@ -1,29 +1,24 @@
-import express from "express";
-const app = express();
-
 app.get('/api/:date?', (req, res) => {
-    let dateInput = req.params.date;
-    let date;
+    let { date } = req.params;
+    console.log("Raw input:", date);
 
-    if (!dateInput) {
-        date = new Date(); // current date and time
+    if (!date) {
+        date = new Date();
+    } else if (/^\d+$/.test(date)) {
+        console.log("Parsing as Unix timestamp");
+        date = new Date(parseInt(date));
     } else {
-        // Try parsing the date input
-        dateInput = parseInt(dateInput);
-        date = new Date(dateInput);
-        // console.log(date);
-        if (isNaN(date.getTime())) {
-            return res.json({ error: "Invalid Date" });
-        }
+        console.log("Parsing as ISO date string");
+        date = new Date(date);
     }
-    // console.log(typeof(date.getTime()))
+    console.log("Parsed date:", date);
+
+    if (date.toString() === "Invalid Date") {
+        return res.json({ error: "Invalid Date" });
+    }
+
     res.json({
         unix: date.getTime(),
         utc: date.toUTCString()
     });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
 });
